@@ -3,12 +3,13 @@ package GUI;
 import DAO.ConexaoDAO;
 import DAO.PacienteDAO;
 import DTO.PacienteDTO;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
@@ -30,9 +31,10 @@ private PacienteDAO PacienteDAO = new PacienteDAO();
 
 private ConexaoDAO conexaoDAO = new ConexaoDAO();
 
-    /**
-     * Creates new form GUImedicamentos
-     */
+private int idPacienteSelecionado = -1;  // Variável global para armazenar o ID
+
+
+   
     public Paciente() {
         initComponents();
         listarPacientes();
@@ -61,6 +63,36 @@ private void inicializarTabela() {
             }
         }
     });
+}
+public boolean executarComandoSQL(String sql, Object... parametros) {
+    Connection con = null;
+    PreparedStatement pst = null;
+
+    try {
+        con = new ConexaoDAO().getConnection();
+        pst = con.prepareStatement(sql);
+
+        // Definir os parâmetros dinamicamente
+        for (int i = 0; i < parametros.length; i++) {
+            pst.setObject(i + 1, parametros[i]);
+            System.out.println("Parâmetro [" + (i + 1) + "]: " + parametros[i]);  // 🔥 Debug
+        }
+
+        int linhasAfetadas = pst.executeUpdate();
+        System.out.println("Linhas afetadas: " + linhasAfetadas);  // 🔥 Debug
+
+        return linhasAfetadas > 0;
+    } catch (SQLException e) {
+        System.err.println("Erro ao executar SQL: " + e.getMessage());
+        return false;
+    } finally {
+        try {
+            if (pst != null) pst.close();
+            if (con != null) con.close();
+        } catch (SQLException e) {
+            System.err.println("Erro ao fechar conexão: " + e.getMessage());
+        }
+    }
 }
 
 
@@ -163,6 +195,7 @@ private void inicializarTabela() {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
+        tablePacientes.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         tablePacientes.setModel(new DefaultTableModel(
             new Object[][]{}, 
             new String[]{"ID", "Nome", "CPF", "Data Nascimento", "Telefone", "Email", "Sexo", "Espécie", "Raça"}
@@ -182,6 +215,11 @@ private void inicializarTabela() {
         });
 
         atualizarbutton.setText("Atualizar");
+        atualizarbutton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                atualizarbuttonMouseClicked(evt);
+            }
+        });
         atualizarbutton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 atualizarbuttonActionPerformed(evt);
@@ -425,7 +463,12 @@ private void inicializarTabela() {
     }//GEN-LAST:event_cadastrarbuttonActionPerformed
 
     private void atualizarbuttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_atualizarbuttonActionPerformed
-      atualizarPaciente();
+  
+    try {
+        atualizarPaciente();
+    } catch (SQLException ex) {
+        Logger.getLogger(Paciente.class.getName()).log(Level.SEVERE, null, ex);
+    }
       listarPacientes();
       carregarCamposPaciente();
     }//GEN-LAST:event_atualizarbuttonActionPerformed
@@ -446,9 +489,27 @@ private void inicializarTabela() {
     }//GEN-LAST:event_excluirbuttonActionPerformed
 
     private void tablePacientesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tablePacientesMouseClicked
-        carregarCamposPaciente();
-         listarPacientes();
+
+          int selectedRow = tablePacientes.getSelectedRow();
+    System.out.println("📌 Linha clicada: " + selectedRow);
+
+    if (selectedRow != -1) {
+        txtNome.setText(tablePacientes.getValueAt(selectedRow, 1).toString());
+        txtCpfDoDono.setText(tablePacientes.getValueAt(selectedRow, 2).toString());
+        txtTelefoneDoDono.setText(tablePacientes.getValueAt(selectedRow, 3).toString());
+        txtEmailDoDono.setText(tablePacientes.getValueAt(selectedRow, 4).toString());
+        txtSexoB.setText(tablePacientes.getValueAt(selectedRow, 5).toString());
+        txtEspecieB.setText(tablePacientes.getValueAt(selectedRow, 6).toString());
+        txtRacaB.setText(tablePacientes.getValueAt(selectedRow, 7).toString());
+        txtDataDeNascimento.setText(tablePacientes.getValueAt(selectedRow, 8).toString());
+
+        System.out.println("📌 Paciente carregado: " + txtNome.getText());
+    }
     }//GEN-LAST:event_tablePacientesMouseClicked
+
+    private void atualizarbuttonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_atualizarbuttonMouseClicked
+        // TODO add your handling code here:
+    }//GEN-LAST:event_atualizarbuttonMouseClicked
 
     /**
      * @param args the command line arguments
@@ -594,64 +655,77 @@ private void cadastrarPaciente() {
         JOptionPane.showMessageDialog(null, "Erro ao cadastrar paciente: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
     }
 }
-private void atualizarPaciente() {
-        
-    
-        int idPacienteSelecionado=0;
+private void atualizarPaciente() throws SQLException {
+    int selectedRow = tablePacientes.getSelectedRow(); // 🔹 Obtém a linha selecionada
+    System.out.println("📌 Tentando atualizar... Linha selecionada: " + selectedRow);
 
-        if (idPacienteSelecionado != -1) {  // Verifica se um paciente foi selecionado
-            // Pega os dados dos campos
-            String nome = txtNome.getText();
-            String cpfDoDono = txtCpfDoDono.getText();
-            String telefoneDoDono = txtTelefoneDoDono.getText();
-            String emailDoDono = txtEmailDoDono.getText();
-            String sexo = txtSexoB.getText();
-            String especie = txtEspecieB.getText();
-            String raca = txtRacaB.getText();
-            String dataNascimento = txtDataDeNascimento.getText();
-
-            // Cria a query para atualizar o paciente
-            String query = "UPDATE pacientes SET nome = ?, cpfDoDono = ?, telefoneDoDono = ?, emailDoDono = ?, sexo = ?, especie = ?, raca = ?, dataNascimento = ? WHERE idPaciente = ?";
-
-            System.out.println("Executando SQL: " + query);  // Debug
-
-            // Chama o método do ConexaoDAO para executar a consulta SQL
-            boolean sucesso = conexaoDAO.executarComandoSQL(query, nome, cpfDoDono, telefoneDoDono, emailDoDono, sexo, especie, raca, dataNascimento, idPacienteSelecionado);
-            
-            if (sucesso) {
-                JOptionPane.showMessageDialog(null, "Paciente atualizado com sucesso.");
-                listarPacientes();  // Atualiza a lista de pacientes
-            } else {
-                JOptionPane.showMessageDialog(null, "Erro ao atualizar o paciente.", "Erro", JOptionPane.ERROR_MESSAGE);
-            }
-        } else {
-            JOptionPane.showMessageDialog(null, "Selecione um paciente para atualizar.", "Erro", JOptionPane.ERROR_MESSAGE);
-        }
+    if (selectedRow == -1) {  // Se nenhuma linha estiver selecionada, exibe erro
+        JOptionPane.showMessageDialog(null, "❌ Nenhum paciente foi selecionado!", "Erro", JOptionPane.ERROR_MESSAGE);
+        return;
     }
+
+    // Obtém o ID do paciente selecionado
+    int idPacienteSelecionado = (int) tablePacientes.getValueAt(selectedRow, 0);
+    System.out.println("📌 ID do paciente selecionado: " + idPacienteSelecionado);
+
+    if (idPacienteSelecionado <= 0) {
+        JOptionPane.showMessageDialog(null, "ID do paciente inválido.", "Erro", JOptionPane.ERROR_MESSAGE);
+        return;
+    }
+
+    // Obtém os dados dos campos
+    String nome = txtNome.getText();
+    String cpfDoDono = txtCpfDoDono.getText();
+    String telefoneDoDono = txtTelefoneDoDono.getText();
+    String emailDoDono = txtEmailDoDono.getText();
+    String sexo = txtSexoB.getText();
+    String especie = txtEspecieB.getText();
+    String raca = txtRacaB.getText();
+    String dataNascimento = txtDataDeNascimento.getText();
+
+    if (nome.isEmpty() || cpfDoDono.isEmpty() || telefoneDoDono.isEmpty() || emailDoDono.isEmpty() || sexo.isEmpty() || especie.isEmpty() || raca.isEmpty() || dataNascimento.isEmpty()) {
+        JOptionPane.showMessageDialog(null, "❌ Preencha todos os campos!", "Erro", JOptionPane.ERROR_MESSAGE);
+        return;
+    }
+
+    // SQL para atualizar o paciente
+    String query = "UPDATE pacientes SET nome = ?, cpfDoDono = ?, telefoneDoDono = ?, emailDoDono = ?, sexo = ?, especie = ?, raca = ?, dataNascimento = ? WHERE idPaciente = ?";
+
+    boolean sucesso = conexaoDAO.executarComandoSQL(query, nome, cpfDoDono, telefoneDoDono, emailDoDono, sexo, especie, raca, dataNascimento, idPacienteSelecionado);
+
+    if (sucesso) {
+        JOptionPane.showMessageDialog(null, "✅ Paciente atualizado com sucesso.");
+        listarPacientes();  // Atualiza a tabela
+    } else {
+        JOptionPane.showMessageDialog(null, "❌ Erro ao atualizar o paciente.", "Erro", JOptionPane.ERROR_MESSAGE);
+    }
+}
 
 
 private void excluirPaciente() {
-        int selectedRow = tablePacientes.getSelectedRow();
-        if (selectedRow != -1) {
-            // Pega o ID do paciente da linha selecionada
-            int idPaciente = (int) tablePacientes.getValueAt(selectedRow, 0);  // Assume que a primeira coluna tem o ID do paciente
-            System.out.println("ID do paciente a excluir: " + idPaciente);  // Debug
-
-            String query = "DELETE FROM pacientes WHERE idPaciente = ?";
-
-            // Chama o método do ConexaoDAO para executar a exclusão
-            boolean sucesso = conexaoDAO.executarComandoSQL(query, idPaciente);
-            
-            if (sucesso) {
-                JOptionPane.showMessageDialog(null, "Paciente excluído com sucesso.");
-                listarPacientes();  // Atualiza a lista de pacientes
-            } else {
-                JOptionPane.showMessageDialog(null, "Erro ao excluir o paciente.", "Erro", JOptionPane.ERROR_MESSAGE);
-            }
-        } else {
-            JOptionPane.showMessageDialog(null, "Selecione um paciente para excluir.", "Erro", JOptionPane.ERROR_MESSAGE);
-        }
+    
+    if (idPacienteSelecionado == -1) {  // Verifica se um paciente foi selecionado
+        JOptionPane.showMessageDialog(null, "Selecione um paciente para excluir.", "Erro", JOptionPane.ERROR_MESSAGE);
+        return;
     }
+
+    System.out.println("ID do paciente a excluir: " + idPacienteSelecionado);  // 🔥 Debug
+
+    String query = "DELETE FROM pacientes WHERE idPaciente = ?";
+
+    // Chama o método do ConexaoDAO para executar a exclusão
+    boolean sucesso = conexaoDAO.executarComandoSQL(query, idPacienteSelecionado);
+
+    if (sucesso) {
+        JOptionPane.showMessageDialog(null, "Paciente excluído com sucesso.");
+        listarPacientes();  // Atualiza a lista de pacientes
+        idPacienteSelecionado = -1;  // Reseta o ID para evitar exclusões acidentais
+    } else {
+        JOptionPane.showMessageDialog(null, "Erro ao excluir o paciente.", "Erro", JOptionPane.ERROR_MESSAGE);
+    }
+}
+
+
 private void listarPacientes() {
     try {
         String query = "SELECT * FROM pacientes";
@@ -686,38 +760,23 @@ private void listarPacientes() {
 }
 private void carregarCamposPaciente() {
     int selectedRow = tablePacientes.getSelectedRow();
-    if (selectedRow != -1) {  // Se uma linha for selecionada
-        // Pega os dados da linha selecionada e preenche os campos de texto
-        int idPaciente = (int) tablePacientes.getValueAt(selectedRow, 0); // ID do paciente (geralmente está na primeira coluna)
-        String nome = (String) tablePacientes.getValueAt(selectedRow, 1);
-        String cpfDoDono = (String) tablePacientes.getValueAt(selectedRow, 2);
-        String telefoneDoDono = (String) tablePacientes.getValueAt(selectedRow, 3);
-        String emailDoDono = (String) tablePacientes.getValueAt(selectedRow, 4);
-        String sexo = (String) tablePacientes.getValueAt(selectedRow, 5);
-        String especie = (String) tablePacientes.getValueAt(selectedRow, 6);
-        String raca = (String) tablePacientes.getValueAt(selectedRow, 7);
-        String dataNascimento = (String) tablePacientes.getValueAt(selectedRow, 8);
+    if (selectedRow != -1) {
+        idPacienteSelecionado = (int) tablePacientes.getValueAt(selectedRow, 0); // ID na primeira coluna
+        System.out.println("ID do paciente armazenado: " + idPacienteSelecionado);  // 🔥 Debug
 
-        // Preenche os campos de texto
-        txtNome.setText(nome);
-        txtCpfDoDono.setText(cpfDoDono);
-        txtTelefoneDoDono.setText(telefoneDoDono);
-        txtEmailDoDono.setText(emailDoDono);
-        txtSexoB.setText(sexo);
-        txtEspecieB.setText(especie);
-        txtRacaB.setText(raca);
-        txtDataDeNascimento.setText(dataNascimento);
-
-        // Armazena o ID do paciente para futura atualização
-        int idPacienteSelecionado = idPaciente; // idPacienteSelecionado é uma variável global
+        txtNome.setText(tablePacientes.getValueAt(selectedRow, 1).toString());
+        txtCpfDoDono.setText(tablePacientes.getValueAt(selectedRow, 2).toString());
+        txtTelefoneDoDono.setText(tablePacientes.getValueAt(selectedRow, 3).toString());
+        txtEmailDoDono.setText(tablePacientes.getValueAt(selectedRow, 4).toString());
+        txtSexoB.setText(tablePacientes.getValueAt(selectedRow, 5).toString());
+        txtEspecieB.setText(tablePacientes.getValueAt(selectedRow, 6).toString());
+        txtRacaB.setText(tablePacientes.getValueAt(selectedRow, 7).toString());
+        txtDataDeNascimento.setText(tablePacientes.getValueAt(selectedRow, 8).toString());
+    } else {
+        System.out.println("Nenhum paciente selecionado.");
     }
-    tablePacientes.addMouseListener(new MouseAdapter() {
-    public void mouseClicked(MouseEvent evt) {
-        carregarCamposPaciente();
-    }
-});
-
 }
+
 private void limparCamposPaciente() {
     txtNome.setText(null);
     txtCpfDoDono.setText(null);
