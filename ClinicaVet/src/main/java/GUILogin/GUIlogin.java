@@ -221,7 +221,7 @@ public JTextField getusuariotxt() {
         return usuariotxt;
     }
 
-    public void setTxtNome(JTextField usuariotxt) {
+    public void setusuariotxt(JTextField usuariotxt) {
         this.usuariotxt = usuariotxt;
     }
 

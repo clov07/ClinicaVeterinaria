@@ -490,20 +490,26 @@ public boolean executarComandoSQL(String sql, Object... parametros) {
 
     private void tablePacientesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tablePacientesMouseClicked
 
-          int selectedRow = tablePacientes.getSelectedRow();
+            int selectedRow = tablePacientes.getSelectedRow(); // Obtém a linha selecionada
     System.out.println("📌 Linha clicada: " + selectedRow);
 
     if (selectedRow != -1) {
+        // 🔹 Exibir os dados da linha no console para verificar a ordem correta
+        for (int i = 0; i < tablePacientes.getColumnCount(); i++) {
+            System.out.println("🔹 Coluna " + i + ": " + tablePacientes.getValueAt(selectedRow, i));
+        }
+
+        // 🔹 Agora preenche os campos de texto (CUIDADO com a ordem das colunas!)
         txtNome.setText(tablePacientes.getValueAt(selectedRow, 1).toString());
         txtCpfDoDono.setText(tablePacientes.getValueAt(selectedRow, 2).toString());
-        txtTelefoneDoDono.setText(tablePacientes.getValueAt(selectedRow, 3).toString());
-        txtEmailDoDono.setText(tablePacientes.getValueAt(selectedRow, 4).toString());
-        txtSexoB.setText(tablePacientes.getValueAt(selectedRow, 5).toString());
-        txtEspecieB.setText(tablePacientes.getValueAt(selectedRow, 6).toString());
-        txtRacaB.setText(tablePacientes.getValueAt(selectedRow, 7).toString());
-        txtDataDeNascimento.setText(tablePacientes.getValueAt(selectedRow, 8).toString());
+        txtDataDeNascimento.setText(tablePacientes.getValueAt(selectedRow, 3).toString());
+        txtTelefoneDoDono.setText(tablePacientes.getValueAt(selectedRow, 4).toString());
+        txtEmailDoDono.setText(tablePacientes.getValueAt(selectedRow, 5).toString());
+        txtSexoB.setText(tablePacientes.getValueAt(selectedRow, 6).toString());
+        txtEspecieB.setText(tablePacientes.getValueAt(selectedRow, 7).toString());
+        txtRacaB.setText(tablePacientes.getValueAt(selectedRow, 8).toString());
 
-        System.out.println("📌 Paciente carregado: " + txtNome.getText());
+        System.out.println("📌 Paciente carregado no formulário: " + txtNome.getText());
     }
     }//GEN-LAST:event_tablePacientesMouseClicked
 
@@ -612,12 +618,13 @@ private void cadastrarPaciente() {
     // Capturando os dados do formulário
     String nome = txtNome.getText();
     String cpfDoDono = txtCpfDoDono.getText().trim();
+    String dataNascimento = txtDataDeNascimento.getText().trim();
     String telefoneDoDono = txtTelefoneDoDono.getText().trim();
     String emailDoDono = txtEmailDoDono.getText().trim();
     String sexo = txtSexoB.getText().trim();
     String especie = txtEspecieB.getText().trim();
     String raca = txtRacaB.getText().trim();
-    String dataNascimento = txtDataDeNascimento.getText().trim();
+   
 
     if (cpfDoDono.isEmpty() || telefoneDoDono.isEmpty() || especie.isEmpty()) {
         JOptionPane.showMessageDialog(null, "❌ Preencha todos os campos obrigatórios!", "Erro", JOptionPane.ERROR_MESSAGE);
@@ -632,18 +639,19 @@ private void cadastrarPaciente() {
         System.out.println("Dados capturados do formulario: " + novoPaciente.toString());
 
         // Conectando ao banco e inserindo o paciente
-        String query = "INSERT INTO pacientes (nome, cpfDoDono, telefoneDoDono, emailDoDono, sexo, especie, raca, dataNascimento) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO pacientes (nome, cpfDoDono, dataNascimento, telefoneDoDono, emailDoDono, sexo, especie, raca) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DriverManager.getConnection(URL,USUARIO,SENHA);
              PreparedStatement pst = conn.prepareStatement(query)) {
 
             pst.setString(1, nome);
             pst.setString(2, cpfDoDono);
-            pst.setString(3, telefoneDoDono);
-            pst.setString(4, emailDoDono);
-            pst.setString(5, sexo);
-            pst.setString(6, especie);
-            pst.setString(7, raca);
-            pst.setString(8, dataNascimento);
+            pst.setString(3, dataNascimento);
+            pst.setString(4, telefoneDoDono);
+            pst.setString(5, emailDoDono);
+            pst.setString(6, sexo);
+            pst.setString(7, especie);
+            pst.setString(8, raca);
+            
 
             pst.executeUpdate();  // Executa a inserção
 
@@ -656,7 +664,7 @@ private void cadastrarPaciente() {
     }
 }
 private void atualizarPaciente() throws SQLException {
-    int selectedRow = tablePacientes.getSelectedRow(); // 🔹 Obtém a linha selecionada
+    int selectedRow = tablePacientes.getSelectedRow(); // Obtém a linha selecionada
     System.out.println("📌 Tentando atualizar... Linha selecionada: " + selectedRow);
 
     if (selectedRow == -1) {  // Se nenhuma linha estiver selecionada, exibe erro
@@ -676,22 +684,32 @@ private void atualizarPaciente() throws SQLException {
     // Obtém os dados dos campos
     String nome = txtNome.getText();
     String cpfDoDono = txtCpfDoDono.getText();
+    String dataNascimento = txtDataDeNascimento.getText();
     String telefoneDoDono = txtTelefoneDoDono.getText();
     String emailDoDono = txtEmailDoDono.getText();
     String sexo = txtSexoB.getText();
     String especie = txtEspecieB.getText();
     String raca = txtRacaB.getText();
-    String dataNascimento = txtDataDeNascimento.getText();
 
-    if (nome.isEmpty() || cpfDoDono.isEmpty() || telefoneDoDono.isEmpty() || emailDoDono.isEmpty() || sexo.isEmpty() || especie.isEmpty() || raca.isEmpty() || dataNascimento.isEmpty()) {
+    System.out.println("📌 Dados para atualização:");
+    System.out.println("🔹 Nome: " + nome);
+    System.out.println("🔹 CPF: " + cpfDoDono);
+    System.out.println("🔹 Data Nascimento: " + dataNascimento);
+    System.out.println("🔹 Telefone: " + telefoneDoDono);
+    System.out.println("🔹 Email: " + emailDoDono);
+    System.out.println("🔹 Sexo: " + sexo);
+    System.out.println("🔹 Espécie: " + especie);
+    System.out.println("🔹 Raça: " + raca);
+
+    if (nome.isEmpty() || cpfDoDono.isEmpty() || dataNascimento.isEmpty() || telefoneDoDono.isEmpty() || emailDoDono.isEmpty() || sexo.isEmpty() || especie.isEmpty() || raca.isEmpty()) {
         JOptionPane.showMessageDialog(null, "❌ Preencha todos os campos!", "Erro", JOptionPane.ERROR_MESSAGE);
         return;
     }
 
     // SQL para atualizar o paciente
-    String query = "UPDATE pacientes SET nome = ?, cpfDoDono = ?, telefoneDoDono = ?, emailDoDono = ?, sexo = ?, especie = ?, raca = ?, dataNascimento = ? WHERE idPaciente = ?";
+    String query = "UPDATE pacientes SET nome = ?, cpfDoDono = ?, dataNascimento = ?, telefoneDoDono = ?, emailDoDono = ?, sexo = ?, especie = ?, raca = ? WHERE idPaciente = ?";
 
-    boolean sucesso = conexaoDAO.executarComandoSQL(query, nome, cpfDoDono, telefoneDoDono, emailDoDono, sexo, especie, raca, dataNascimento, idPacienteSelecionado);
+    boolean sucesso = conexaoDAO.executarComandoSQL(query, nome, cpfDoDono, dataNascimento, telefoneDoDono, emailDoDono, sexo, especie, raca, idPacienteSelecionado);
 
     if (sucesso) {
         JOptionPane.showMessageDialog(null, "✅ Paciente atualizado com sucesso.");
@@ -746,7 +764,8 @@ private void listarPacientes() {
                     rs.getString("emailDoDono"),
                     rs.getString("sexo"),
                     rs.getString("especie"),
-                    rs.getString("raca")
+                    rs.getString("raca"),
+                   
                 };
                 model.addRow(rowData);
             }
@@ -766,12 +785,13 @@ private void carregarCamposPaciente() {
 
         txtNome.setText(tablePacientes.getValueAt(selectedRow, 1).toString());
         txtCpfDoDono.setText(tablePacientes.getValueAt(selectedRow, 2).toString());
-        txtTelefoneDoDono.setText(tablePacientes.getValueAt(selectedRow, 3).toString());
-        txtEmailDoDono.setText(tablePacientes.getValueAt(selectedRow, 4).toString());
-        txtSexoB.setText(tablePacientes.getValueAt(selectedRow, 5).toString());
-        txtEspecieB.setText(tablePacientes.getValueAt(selectedRow, 6).toString());
-        txtRacaB.setText(tablePacientes.getValueAt(selectedRow, 7).toString());
-        txtDataDeNascimento.setText(tablePacientes.getValueAt(selectedRow, 8).toString());
+        txtDataDeNascimento.setText(tablePacientes.getValueAt(selectedRow, 3).toString());
+        txtTelefoneDoDono.setText(tablePacientes.getValueAt(selectedRow, 4).toString());
+        txtEmailDoDono.setText(tablePacientes.getValueAt(selectedRow, 5).toString());
+        txtSexoB.setText(tablePacientes.getValueAt(selectedRow, 6).toString());
+        txtEspecieB.setText(tablePacientes.getValueAt(selectedRow, 7).toString());
+        txtRacaB.setText(tablePacientes.getValueAt(selectedRow, 8).toString());
+        
     } else {
         System.out.println("Nenhum paciente selecionado.");
     }
