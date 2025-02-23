@@ -4,6 +4,8 @@
 
 package com.mycompany.clinicavet;
 
+import GUILogin.GUIlogin;
+
 /**
  *
  * @author carlo
@@ -11,6 +13,10 @@ package com.mycompany.clinicavet;
 public class ClinicaVet {
 
     public static void main(String[] args) {
-        System.out.println("Hello World!");
+        // Criando uma instância de GUIlogin
+        GUIlogin objtGl = new GUIlogin();
+        
+        // Tornando a janela visível
+        objtGl.setVisible(true);  
     }
 }

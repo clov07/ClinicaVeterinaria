@@ -9,7 +9,7 @@ import java.sql.SQLException;
 
 public class ConnectionFactory {
     // Configurações do banco de dados
-    private static final String URL = "jdbc:mysql://127.0.0.1:3306/clinica_veterinaria";
+    private static final String URL = "jdbc:mysql://127.0.0.1:3306/clinicavet";
     private static final String USUARIO = "root"; // Substitua pelo seu usuário do MySQL
     private static final String SENHA = "mirandiba10"; // Substitua pela sua senha do MySQL
 
