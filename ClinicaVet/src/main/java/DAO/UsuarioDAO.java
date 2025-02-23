@@ -9,43 +9,39 @@ package DAO;
  * @author carlo
  */
 
-import ConexaoBD.ConnectionFactory;
-import DTO.UsuarioDTO;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class UsuarioDAO {
-    private Connection connection;
-
-    public UsuarioDAO() {
-        connection = ConnectionFactory.getConnection();
-    }
-
-    // Método para verificar se o usuário e senha estão corretos
-    public boolean validarLogin(String usuario, String senha) {
-        String query = "SELECT * FROM entrar WHERE usuario = ? AND senha = ?";
-        try (PreparedStatement pst = connection.prepareStatement(query)) {
-            pst.setString(1, usuario);
-            pst.setString(2, senha);
-            ResultSet rs = pst.executeQuery();
-
+public boolean validarlogin(String nome, String senha) throws SQLException {
+        Connection conexao = null;
+        PreparedStatement statement = null;
+        ResultSet rs = null;
+        
+        try {
+            conexao = new ConexaoDAO().getConnection();
+            String sql = "SELECT * from entrar where usuario = ? and senha = ?";
+            statement = conexao.prepareStatement(sql);
+            statement.setString(1, nome);
+            statement.setString(2, senha);
+            
+            rs = statement.executeQuery();
+            
             if (rs.next()) {
-                System.out.println("✅ Login bem-sucedido para: " + usuario);
-                return true;
+                return true;  // Login válido
             } else {
-                System.out.println("❌ Falha no login: usuário ou senha incorretos!");
-                return false;
+                return false; // Login inválido
             }
         } catch (SQLException e) {
-            System.err.println("❌ Erro ao validar login: " + e.getMessage());
+            System.err.println("Erro ao validar login: " + e.getMessage());
             return false;
+        } finally {
+            // Fechar os recursos
+            if (rs != null) rs.close();
+            if (statement != null) statement.close();
+            if (conexao != null) conexao.close();
         }
     }
-
-    public ResultSet autenticacaoUsuario(UsuarioDTO objUsuario) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
 }
-

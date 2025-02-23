@@ -14,8 +14,12 @@ import java.sql.SQLException;
  * @author carlo
  */
 public class ConexaoDAO {
+    private static final String URL = "jdbc:mysql://127.0.0.1:3306/clinicavet";
+    private static final String USUARIO = "root"; // Substitua pelo seu usuário do MySQL
+    private static final String SENHA = "mirandiba10"; // Substitua pela sua senha do MySQL
+
     public boolean executarComandoSQL(String query, Object... parametros) {
-    try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/suabase", "root", "senha")) {
+    try (Connection conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/clinicavet", "root", "mirandiba10")) {
         PreparedStatement stmt = conn.prepareStatement(query);
         
         for (int i = 0; i < parametros.length; i++) {
@@ -28,5 +32,17 @@ public class ConexaoDAO {
         e.printStackTrace();
         return false;
     }
+    
+    }
+    public static Connection getConnection() {
+        try {
+            // Carrega o driver JDBC (não necessário em Java 8+, mas pode ajudar)
+            Class.forName("com.mysql.cj.jdbc.Driver");
+
+            // Retorna a conexão com o banco de dados
+            return DriverManager.getConnection(URL, USUARIO, SENHA);
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new RuntimeException("❌ Erro ao conectar ao banco: " + e.getMessage(), e);
+        }
     }
 }

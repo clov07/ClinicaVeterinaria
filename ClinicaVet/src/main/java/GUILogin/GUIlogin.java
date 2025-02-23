@@ -3,19 +3,9 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package GUILogin;
-
 import DAO.UsuarioDAO;
-import DTO.UsuarioDTO;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 
 /**
  *
@@ -171,7 +161,12 @@ public class GUIlogin extends javax.swing.JFrame {
     }//GEN-LAST:event_usuariotxtActionPerformed
 
     private void entrarButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_entrarButtonActionPerformed
-   
+      try{  
+        LoginController login = new LoginController();
+        login.logarUsuario(this);
+      } catch(SQLException sql){
+          
+      }
     }//GEN-LAST:event_entrarButtonActionPerformed
 
     /**
@@ -222,89 +217,26 @@ public class GUIlogin extends javax.swing.JFrame {
     private javax.swing.JTextField senhatxt;
     private javax.swing.JTextField usuariotxt;
     // End of variables declaration//GEN-END:variables
-
-    public class Login extends JFrame {
-    private JTextField usuariotxt;
-    private JPasswordField senhatxt;
-    private JButton entrarButton;
-
-    public Login() {
-        initComponents();
+public JTextField getusuariotxt() {
+        return usuariotxt;
     }
 
-    private void initComponents() {
-        setTitle("Login - Clínica Veterinária");
-        setSize(400, 250);
-        setLocationRelativeTo(null);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-
-        JLabel lblUsuario = new JLabel("Usuário:");
-        usuariotxt = new JTextField(20);
-
-        JLabel lblSenha = new JLabel("Senha:");
-        senhatxt = new JPasswordField(20);
-
-        entrarButton = new JButton("Entrar");
-        // Ação do botão: Chama o método logar()
-        entrarButton.addActionListener(evt -> logar());
-
-        JPanel panel = new JPanel();
-        panel.setLayout(new java.awt.GridLayout(3, 2, 5, 5));
-        panel.add(lblUsuario);
-        panel.add(usuariotxt);
-        panel.add(lblSenha);
-        panel.add(senhatxt);
-        panel.add(entrarButton);
-
-        add(panel);
+    public void setTxtNome(JTextField usuariotxt) {
+        this.usuariotxt = usuariotxt;
     }
 
-    // Função para limpar os campos após falha no login
-    public void limparCampos() {
-        usuariotxt.setText(null);
-        senhatxt.setText(null);
-        usuariotxt.requestFocus();
+    public JTextField getsenhatxt() {
+        return senhatxt;
     }
 
-    // Função para realizar o login
-    public void logar() {
-        try {
-            String user = usuariotxt.getText();
-            String password = new String(senhatxt.getPassword());
-
-            if (user.isEmpty() || password.isEmpty()) {
-                JOptionPane.showMessageDialog(null, "❌ Preencha todos os campos!", "Erro", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            // Criar um objeto UsuarioDTO
-            UsuarioDTO objUsuario = new UsuarioDTO(0, user, password);
-
-            // Chamar a função do DAO para autenticação
-            UsuarioDAO usuarioDao = new UsuarioDAO();
-            ResultSet rsUserDao = usuarioDao.autenticacaoUsuario(objUsuario);
-
-            if (rsUserDao.next()) {
-                JOptionPane.showMessageDialog(null, "✅ Login realizado com sucesso!");
-
-                // Abre a tela principal após login
-                new GUIlogin().setVisible(true);
-                dispose(); // Fecha a tela de login
-
-            } else {
-                JOptionPane.showMessageDialog(null, "❌ Dados Inválidos!", "Erro", JOptionPane.ERROR_MESSAGE);
-                limparCampos();
-            }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "❌ Erro no login: " + e.getMessage());
-        }
+    public void setsenhatxt(JTextField senhatxt) {
+        this.senhatxt = senhatxt;
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new GUIlogin().setVisible(true)); // Chama Login em vez de GUIlogin
-    }
-}
 
+
+
+  
 }
 
 

@@ -5,7 +5,7 @@
 package DTO;
 
 public class PacienteDTO {
-    private int id;
+    private int idPaciente;
     private String nome;
     private String cpfDoDono;
     private String dataNascimento;
@@ -15,8 +15,8 @@ public class PacienteDTO {
     private String especie;
     private String raca;
 
-    public PacienteDTO(int id, String nome, String cpfDoDono, String dataNascimento, String telefoneDoDono, String emailDoDono, String sexo, String especie, String raca) {
-        this.id = id;
+    public PacienteDTO(int idPaciente, String nome, String cpfDoDono, String dataNascimento, String telefoneDoDono, String emailDoDono, String sexo, String especie, String raca) {
+        this.idPaciente = idPaciente;
         this.nome = nome;
         this.cpfDoDono = cpfDoDono;
         this.dataNascimento = dataNascimento;
@@ -28,8 +28,8 @@ public class PacienteDTO {
     }
 
     // Getters e Setters
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    public int getId() { return idPaciente; }
+    public void setId(int id) { this.idPaciente = idPaciente; }
 
     public String getNome() { return nome; }
     public void setNome(String nome) { this.nome = nome; }
